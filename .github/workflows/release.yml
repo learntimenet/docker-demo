@@ -1,0 +1,33 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      RELEASE_VERSION:
+        description: 'Release version. Example: 1.0.0'
+        required: true
+        type: string
+      NEXT_DEV_VERSION:
+        description: 'Next DEV Version. Example: 1.0.1-SNAPSHOT'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: docker build -t ghcr.io/learntime/docker-demo:${{ inputs.RELEASE_VERSION }} .
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker Image
+        run: docker push ghcr.io/learntime/docker-demo:${{ inputs.RELEASE_VERSION }}
